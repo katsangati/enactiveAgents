@@ -1,10 +1,10 @@
-__author__ = 'katja'
-
 from interaction import Interaction
 from experiment import Experiment
 from result import Result
 from anticipation import Anticipation
 import random
+
+__author__ = 'katja'
 
 
 class Existence:
@@ -31,13 +31,14 @@ class Existence:
 
     def step(self):
         anticipations = self.anticipate()
-        chosen_interaction = self.select_interaction(anticipations)
-        print "Intending " + chosen_interaction.__repr__()
-        if chosen_interaction is not None:
-            experiment = chosen_interaction.get_experiment()
-        else:
-            experiment = self.get_random_experiment()
+        # chosen_interaction = self.select_interaction(anticipations)
+        # print "Intending " + chosen_interaction.__repr__()
+        # if chosen_interaction is not None:
+        #     experiment = chosen_interaction.get_experiment()
+        # else:
+        #     experiment = self.get_random_experiment()
 
+        experiment = self.select_experiment(anticipations)
         result = self.return_result(experiment)
 
         enacted_interaction = self.get_interaction(experiment.get_label() + result.get_label())
@@ -127,20 +128,38 @@ class Existence:
                 activated_interactions.append(activated_interaction)
         return activated_interactions
 
-    @staticmethod
-    def select_interaction(anticipations):
+#     @staticmethod
+#     def select_interaction(anticipations):
+#         if len(anticipations) > 0:
+# #            anticipations.sort(key=lambda x: x.compare(), reverse=True)
+#             anticipations.sort(key=lambda x: x.get_proclivity(), reverse=True)
+#             afforded_interaction = anticipations[0].get_interaction()
+#             if afforded_interaction.get_valence() >= 0:
+#                 intended_interaction = afforded_interaction
+#             else:
+#                 intended_interaction = None
+#         else:
+#             intended_interaction = None
+#         return intended_interaction
+
+    def select_experiment(self, anticipations):
         if len(anticipations) > 0:
-#            anticipations.sort(key=lambda x: x.compare(), reverse=True)
             anticipations.sort(key=lambda x: x.get_proclivity(), reverse=True)
             afforded_interaction = anticipations[0].get_interaction()
             if afforded_interaction.get_valence() >= 0:
                 intended_interaction = afforded_interaction
+                print "Intending " + intended_interaction.__repr__()
+                chosen_experiment = intended_interaction.get_experiment()
             else:
-                #bad_experiment = afforded_interaction.get_experiment()
-                intended_interaction = None
+                bad_experiment = afforded_interaction.get_experiment()
+                chosen_experiment = self.get_random_experiment()
+                while chosen_experiment == bad_experiment:
+                    chosen_experiment = self.get_random_experiment()
+                print "Don't like the affordance, intending experiment " + chosen_experiment.get_label()
         else:
-            intended_interaction = None
-        return intended_interaction
+            chosen_experiment = self.get_random_experiment()
+            print "Don't know what to do, intending experiment " + chosen_experiment.get_label()
+        return chosen_experiment
 
     def get_random_experiment(self):
         random_key = random.sample(self.EXPERIMENTS, 1)[0]

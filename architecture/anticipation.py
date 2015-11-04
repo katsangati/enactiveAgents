@@ -14,7 +14,6 @@ class Anticipation:
 
     def compare(self):
         return self.interaction.get_valence()
-        #return self.get_proclivity()
 
-    # def __repr__(self):
-    #     return "{0} proclivity {1}".format(self.experience.getLabel(), self.proclivity)
+    def __repr__(self):
+        return "{0} proclivity {1}".format(self.interaction.get_label(), self.proclivity)

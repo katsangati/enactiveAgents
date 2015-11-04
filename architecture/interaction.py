@@ -54,5 +54,5 @@ class Interaction:
         self.weight += 1
 
     def __repr__(self):
-        return "{0}, valence {1}, weight {2}".format(self.get_label(),self.get_valence(),self.get_weight())
+        return "{0}, valence {1}, weight {2}".format(self.get_label(), self.get_valence(), self.get_weight())
 

@@ -1,9 +1,10 @@
-__author__ = 'katja'
-#import sys
 import pygame
 import math
 from copy import deepcopy
 import random
+
+__author__ = 'katja'
+
 
 pygame.init()
 clock = pygame.time.Clock()

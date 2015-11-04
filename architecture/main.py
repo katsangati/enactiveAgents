@@ -1,6 +1,7 @@
+from existence import Existence
+
 __author__ = 'katja'
 
-from existence import Existence
 
 if __name__ == '__main__':
     ex = Existence()
