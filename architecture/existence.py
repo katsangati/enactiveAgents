@@ -10,8 +10,16 @@ __author__ = 'katja'
 class Existence:
     LABEL_E1 = "e1"
     LABEL_E2 = "e2"
+    LABEL_E3 = "e3"
+    LABEL_E4 = "e4"
+
     LABEL_R1 = "r1"
     LABEL_R2 = "r2"
+    LABEL_R3 = "r3"
+    LABEL_R4 = "r4"
+    LABEL_R5 = "r5"
+    LABEL_R6 = "r6"
+
     MOODS = ['HAPPY', 'SAD']
     EXPERIMENTS = dict()
     INTERACTIONS = dict()
@@ -20,39 +28,51 @@ class Existence:
     def __init__(self):
         e1 = self.add_experiment(self.LABEL_E1)
         e2 = self.add_experiment(self.LABEL_E2)
+        e3 = self.add_experiment(self.LABEL_E3)
+        e4 = self.add_experiment(self.LABEL_E4)
+
         r1 = self.add_result(self.LABEL_R1)
         r2 = self.add_result(self.LABEL_R2)
-        self.add_primitive_interaction(e1, r1, -1)
-        self.add_primitive_interaction(e1, r2, 1)
-        self.add_primitive_interaction(e2, r1, -1)
-        self.add_primitive_interaction(e2, r2, 1)
+        r3 = self.add_result(self.LABEL_R3)
+        r4 = self.add_result(self.LABEL_R4)
+        r5 = self.add_result(self.LABEL_R5)
+        r6 = self.add_result(self.LABEL_R6)
+
+        self.add_primitive_interaction(e1, r1, 1)
+        self.add_primitive_interaction(e1, r2, -5000)
+        self.add_primitive_interaction(e2, r3, -1)
+        self.add_primitive_interaction(e3, r4, -1)
+        self.add_primitive_interaction(e4, r5, -1)
+        self.add_primitive_interaction(e4, r6, -1)
+
         self.context_interaction = None
         self.mood = None
 
-    def step(self):
-        anticipations = self.anticipate()
-        # chosen_interaction = self.select_interaction(anticipations)
-        # print "Intending " + chosen_interaction.__repr__()
-        # if chosen_interaction is not None:
-        #     experiment = chosen_interaction.get_experiment()
-        # else:
-        #     experiment = self.get_random_experiment()
-
-        experiment = self.select_experiment(anticipations)
-        result = self.return_result(experiment)
-
-        enacted_interaction = self.get_interaction(experiment.get_label() + result.get_label())
-        print "Enacted " + enacted_interaction.__repr__()
-
-        if enacted_interaction.get_valence() > 0:
-            self.mood = 'HAPPY'
-        else:
-            self.mood = 'SAD'
-
-        self.learn_composite_interaction(self.context_interaction, enacted_interaction)
-        self.context_interaction = enacted_interaction
-
-        return experiment.get_label() + result.get_label() + " " + self.mood
+    # def step(self):
+    #     anticipations = self.anticipate()
+    #     # chosen_interaction = self.select_interaction(anticipations)
+    #     # print "Intending " + chosen_interaction.__repr__()
+    #     # if chosen_interaction is not None:
+    #     #     experiment = chosen_interaction.get_experiment()
+    #     # else:
+    #     #     experiment = self.get_random_experiment()
+    #
+    #     experiment = self.select_experiment(anticipations)
+    #     result = self.return_result(experiment)
+    #
+    #     enacted_interaction = self.get_interaction(experiment.get_label() + result.get_label())
+    #     print "Enacted " + enacted_interaction.__repr__()
+    #
+    #     if enacted_interaction.get_valence() > 0:
+    #         self.mood = 'HAPPY'
+    #     else:
+    #         self.mood = 'SAD'
+    #
+    #     self.learn_composite_interaction(self.context_interaction, enacted_interaction)
+    #     self.context_interaction = enacted_interaction
+    #
+    #     return experiment
+#        return experiment.get_label() + result.get_label() + " " + self.mood
 
     def add_primitive_interaction(self, experiment, result, valence):
         label = experiment.get_label() + result.get_label()
@@ -182,13 +202,13 @@ class Existence:
     def get_experiment(self, label):
         return self.EXPERIMENTS[label]
 
-    def return_result(self, experiment):
-        if self.context_interaction is not None:
-            if experiment == self.context_interaction.get_experiment():
-                result = self.get_result(self.LABEL_R1)
-            else:
-                result = self.get_result(self.LABEL_R2)
-        else:
-            result = self.get_result(self.LABEL_R2)
-        return result
+    # def return_result(self, experiment):
+    #     if self.context_interaction is not None:
+    #         if experiment == self.context_interaction.get_experiment():
+    #             result = self.get_result(self.LABEL_R1)
+    #         else:
+    #             result = self.get_result(self.LABEL_R2)
+    #     else:
+    #         result = self.get_result(self.LABEL_R2)
+    #     return result
 

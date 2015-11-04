@@ -1,28 +1,20 @@
-import pygame
 import math
 from copy import deepcopy
-import random
-
-__author__ = 'katja'
-
-
-pygame.init()
-clock = pygame.time.Clock()
 
 UNIT = 10
 BORDER = UNIT*2
-WIDTH = 600
-HEIGHT = 500
-
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-done = False
-
+WIDTH = 300
+HEIGHT = 250
+BLUE = (0, 128, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 
 class Agent:
     def __init__(self, center):
         self.center = center
         self.angle = 90
         self.get_vertices()
+        self.color = BLUE
 
     def get_vertices(self):
         """center is an x,y-tuple; angle is a float"""
@@ -41,6 +33,7 @@ class Agent:
         return temp_point
 
     def move(self, steps):
+        self.color = BLUE
         a = math.radians(self.angle)
         sine = math.sin(a)
         cosine = math.cos(a)
@@ -51,8 +44,12 @@ class Agent:
         if not self.check_inside():
             self.vertices = old_vertices
             self.center = old_center
+            self.color = RED
+            return False
+        return True
 
     def rotate(self, angle):
+        self.color = BLUE
         self.angle += angle
         old_vertices = deepcopy(self.vertices)
         self.get_vertices()
@@ -60,32 +57,27 @@ class Agent:
             self.vertices = old_vertices
             self.angle -= angle
 
+    def feel_front(self, steps):
+        self.color = GREEN
+        a = math.radians(self.angle)
+        sine = math.sin(a)
+        cosine = math.cos(a)
+        old_vertices = deepcopy(self.vertices)
+        old_center = deepcopy(self.center)
+        self.center = (self.center[0]+steps*UNIT*cosine, self.center[1]+steps*UNIT*sine)
+        self.get_vertices()
+        clear_ahead = self.check_inside()
+        self.vertices = old_vertices
+        self.center = old_center
+        return clear_ahead
+
     def check_inside(self):
-        """returns true or false for whether any of the vertices is inside the field"""
+        """returns true if all the vertices are inside the field"""
         if self.center[0]-BORDER < 0 or self.center[0]+BORDER > WIDTH:
             return False
         if self.center[1]-BORDER < 0 or self.center[1]+BORDER > HEIGHT:
             return False
         return True
 
-kenny = Agent((random.randint(BORDER,WIDTH-BORDER), random.randint(BORDER,HEIGHT-BORDER)))
-
-while not done:
-    screen.fill((0, 0, 0))
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_DOWN:
-                kenny.move(1)
-            if event.key == pygame.K_LEFT:
-                kenny.rotate(5)
-            if event.key == pygame.K_RIGHT:
-                kenny.rotate(-5)
-
-    pygame.draw.polygon(screen, (0, 128, 255), kenny.vertices)
-    pygame.display.flip()
-    clock.tick(60)
-
-
-
+    def feel(self):
+        return None
