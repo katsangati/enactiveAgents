@@ -59,8 +59,9 @@ if __name__ == '__main__':
             print (i, experiment.get_label(), result, str(enacted_interaction.get_valence()))
 
         pygame.draw.polygon(screen, kenny.color, kenny.vertices)
+        #pygame.image.save(screen, str(i)+".jpeg")
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(10)
         i += 1
 
 

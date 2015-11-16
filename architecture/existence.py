@@ -38,12 +38,12 @@ class Existence:
         r5 = self.add_result(self.LABEL_R5)
         r6 = self.add_result(self.LABEL_R6)
 
-        self.add_primitive_interaction(e1, r1, 1)
-        self.add_primitive_interaction(e1, r2, -5000)
-        self.add_primitive_interaction(e2, r3, -1)
-        self.add_primitive_interaction(e3, r4, -1)
-        self.add_primitive_interaction(e4, r5, -1)
-        self.add_primitive_interaction(e4, r6, -1)
+        self.add_primitive_interaction(e1, r1, 5)  # move forward
+        self.add_primitive_interaction(e1, r2, -10)  # bump
+        self.add_primitive_interaction(e2, r3, -1)  # turn left
+        self.add_primitive_interaction(e3, r4, -1)  # turn right
+        self.add_primitive_interaction(e4, r5, -1)  # touch empty
+        self.add_primitive_interaction(e4, r6, -2)  # touch wall
 
         self.context_interaction = None
         self.mood = None
@@ -164,7 +164,8 @@ class Existence:
 
     def select_experiment(self, anticipations):
         if len(anticipations) > 0:
-            anticipations.sort(key=lambda x: x.get_proclivity(), reverse=True)
+            #anticipations.sort(key=lambda x: x.get_proclivity(), reverse=True)  # choose by proclivity
+            anticipations.sort(key=lambda x: x.compare(), reverse=True)  # choose by valence
             afforded_interaction = anticipations[0].get_interaction()
             if afforded_interaction.get_valence() >= 0:
                 intended_interaction = afforded_interaction
@@ -176,6 +177,9 @@ class Existence:
                 while chosen_experiment == bad_experiment:
                     chosen_experiment = self.get_random_experiment()
                 print "Don't like the affordance, intending experiment " + chosen_experiment.get_label()
+            # intended_interaction = afforded_interaction
+            # print "Intending " + intended_interaction.__repr__()
+            # chosen_experiment = intended_interaction.get_experiment()
         else:
             chosen_experiment = self.get_random_experiment()
             print "Don't know what to do, intending experiment " + chosen_experiment.get_label()
