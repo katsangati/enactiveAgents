@@ -3,8 +3,8 @@ from copy import deepcopy
 
 UNIT = 10
 BORDER = UNIT*2
-WIDTH = 200
-HEIGHT = 200
+WIDTH = 300
+HEIGHT = 300
 BLUE = (0, 128, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)

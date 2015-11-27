@@ -2,6 +2,7 @@ import pygame
 import random
 from visualizer import canvas
 from architecture.existence import Existence, RecursiveExistence
+from environment import Environment
 import os
 import sys
 import argparse
@@ -31,7 +32,8 @@ def main(saveimg):
                               "turn left": ("e2", "r3", -1), "turn right": ("e3", "r4", -1),
                               "touch empty": ("e4", "r5", -1), "touch wall": ("e4", "r6", -2)}
     # ex = Existence(primitive_interactions)
-    ex = RecursiveExistence(primitive_interactions)
+    environment = Environment(kenny)
+    ex = RecursiveExistence(primitive_interactions, environment)
     i = 1
 
     while not done:
@@ -40,40 +42,27 @@ def main(saveimg):
             if event.type == pygame.QUIT:
                 done = True
 
-        resultstr = None
         anticipations = ex.anticipate()
         experiment = ex.select_experiment(anticipations)
-        if experiment.get_label() == 'e1':
-            if kenny.move(1):
-                resultstr = 'r1'  # moved forward
-            else:
-                resultstr = 'r2'  # bumped
-        elif experiment.get_label() == 'e2':
-            kenny.rotate(90)
-            resultstr = 'r3'
-        elif experiment.get_label() == 'e3':
-            kenny.rotate(-90)
-            resultstr = 'r4'
-        elif experiment.get_label() == 'e4':
-            if kenny.feel_front(1):
-                resultstr = 'r5'  # clear ahead
-            else:
-                resultstr = 'r6'  # feel wall
 
-        result = ex.addget_result(resultstr)
-        if result is not None:
-            enacted_interaction = ex.addget_primitive_interaction(experiment, result)
-            print "Enacted " + enacted_interaction.__repr__()
+        intended_interaction = experiment.get_intended_interaction()
+        intended_interaction.set_experiment(experiment)
+        enacted_interaction = ex.enact(intended_interaction)
 
-            if enacted_interaction.get_valence() > 0:
-                ex.mood = 'HAPPY'
-            else:
-                ex.mood = 'SAD'
+        if enacted_interaction != intended_interaction and experiment.is_abstract:
+            failed_result = ex.addget_result(enacted_interaction.get_label().upper())
+            valence = enacted_interaction.get_valence()
+            enacted_interaction = ex.addget_primitive_interaction(experiment, failed_result, valence)
 
-            ex.learn_composite_interaction(ex.context_interaction, enacted_interaction)
-            ex.context_interaction = enacted_interaction
+        if enacted_interaction.get_valence() >= 0:
+            ex.mood = 'HAPPY'
+        else:
+            ex.mood = 'SAD'
 
-            print (i, experiment.get_label(), result.get_label(), str(enacted_interaction.get_valence()))
+        # learn context_pair_interaction, context_interaction, enacted_interaction
+        ex.learn_recursive_interaction(enacted_interaction)
+
+        print (i, experiment.get_label(), environment.last_result, str(enacted_interaction.get_valence()))
 
         pygame.draw.polygon(screen, kenny.color, kenny.vertices)
 
