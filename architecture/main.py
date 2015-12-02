@@ -1,4 +1,4 @@
-from existence import RecursiveExistence
+from existence import RecursiveExistence, ConstructiveExistence
 __author__ = 'katja'
 
 
@@ -13,6 +13,7 @@ if __name__ == '__main__':
 
     # ex = Existence()
     ex = RecursiveExistence(primitive_interactions)
+    # ex = ConstructiveExistence(primitive_interactions)
 
     for i in range(0, 50):
         stepTrace = ex.step()

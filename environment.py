@@ -24,76 +24,77 @@ class Environment:
         self.last_result = result
         return result
 
+class ConstructiveEnvironment:
+    def __init__(self, agent):
+        self.agent = agent
+        self.enacted_interaction = None
 
-# package environment;
-#
-# import coupling.interaction.Interaction;
-# import coupling.interaction.Interaction040;
-# import existence.Existence0501;
-# import existence.Existence050;
-#
-# public class Environment050 implements Environment {
-#
-# 	private Existence050 existence;
-#
-# 	public Environment050(Existence050  existence){
-# 		this.existence = existence;
-# 		init();
-# 	}
-#
-# 	protected void init(){
-# 		this.getExistence().addOrGetPrimitiveInteraction(this.getExistence().LABEL_E1 + this.getExistence().LABEL_R1, -1);
-# 		Interaction040 i12 = this.getExistence().addOrGetPrimitiveInteraction(this.getExistence().LABEL_E1 + this.getExistence().LABEL_R2, 1);
-# 		this.getExistence().addOrGetPrimitiveInteraction(this.getExistence().LABEL_E2 + this.getExistence().LABEL_R1, -1);
-# 		Interaction040 i22 = this.getExistence().addOrGetPrimitiveInteraction(this.getExistence().LABEL_E2 + this.getExistence().LABEL_R2, 1);
-# 		this.getExistence().addOrGetAbstractExperience(i12);
-# 		this.getExistence().addOrGetAbstractExperience(i22);
-# 	}
-#
-# 	protected Existence050 getExistence(){
-# 		return this.existence;
-# 	}
-#
-# 	private Interaction previousInteraction;
-# 	protected void setPreviousInteraction(Interaction previousInteraction){
-# 		this.previousInteraction = previousInteraction;
-# 	}
-# 	protected Interaction getPreviousInteraction(){
-# 		return this.previousInteraction;
-# 	}
-#
-# 	private Interaction penultimateInteraction;
-# 	protected void setPenultimateInteraction(Interaction penultimateInteraction){
-# 		this.penultimateInteraction = penultimateInteraction;
-# 	}
-# 	protected Interaction getPenultimateInteraction(){
-# 		return this.penultimateInteraction;
-# 	}
-#
-# 	@Override
-# 	public Interaction enact(Interaction intendedInteraction) {
-# 		Interaction enactedInteraction = null;
-#
-# 		if (intendedInteraction.getLabel().contains(this.getExistence().LABEL_E1)){
-# 			if ( this.getPreviousInteraction() != null &&
-# 				(this.getPenultimateInteraction() == null || this.getPenultimateInteraction().getLabel().contains(this.getExistence().LABEL_E2)) &&
-# 					this.getPreviousInteraction().getLabel().contains(this.getExistence().LABEL_E1))
-# 				enactedInteraction = this.getExistence().addOrGetPrimitiveInteraction(this.getExistence().LABEL_E1 + this.getExistence().LABEL_R2, 0);
-# 			else
-# 				enactedInteraction = this.getExistence().addOrGetPrimitiveInteraction(this.getExistence().LABEL_E1 + this.getExistence().LABEL_R1, 0);
-# 		}
-# 		else{
-# 			if (this.getPreviousInteraction() != null &&
-# 				(this.getPenultimateInteraction() == null || this.getPenultimateInteraction().getLabel().contains(this.getExistence().LABEL_E1)) &&
-# 					this.getPreviousInteraction().getLabel().contains(this.getExistence().LABEL_E2))
-# 				enactedInteraction = this.getExistence().addOrGetPrimitiveInteraction(this.getExistence().LABEL_E2 + this.getExistence().LABEL_R2, 0);
-# 			else
-# 				enactedInteraction = this.getExistence().addOrGetPrimitiveInteraction(this.getExistence().LABEL_E2 + this.getExistence().LABEL_R1, 0);
-# 		}
-#
-# 		this.setPenultimateInteraction(this.getPreviousInteraction());
-# 		this.setPreviousInteraction(enactedInteraction);
-#
-# 		return enactedInteraction;
-# 	}
-# }
+    def enact_primitive_interaction(self, intended_interaction):
+        """Returns R2 when curent experience equals previous and differs from penultimate. Returns R1 otherwise"""
+        experiment = intended_interaction.get_label()[:2]
+        result = None
+        if experiment == 'e1':
+            if self.agent.move(1):
+                result = 'r1'  # moved forward
+            else:
+                result = 'r2'  # bumped
+        elif experiment == 'e2':
+            self.agent.rotate(90)
+            result = 'r3'
+        elif experiment == 'e3':
+            self.agent.rotate(-90)
+            result = 'r4'
+        elif experiment == 'e4':
+            if self.agent.feel_front(1):
+                result = 'r5'  # clear ahead
+            else:
+                result = 'r6'  # feel wall
+
+        enacted_interaction = experiment+result
+        self.enacted_interaction = enacted_interaction
+
+        return enacted_interaction
+
+
+class TestEnvironment:
+    def __init__(self):
+        self.penultimate_interaction = None
+        self.previous_interaction = None
+
+    def set_penultimate_interaction(self, penultimate_interaction):
+        self.penultimate_interaction = penultimate_interaction
+
+    def get_penultimate_interaction(self):
+        return self.penultimate_interaction
+
+    def set_previous_interaction(self, previous_interaction):
+        self.previous_interaction = previous_interaction
+
+    def get_previous_interaction(self):
+        return self.previous_interaction
+
+    def enact_primitive_interaction(self, intended_interaction):
+        """Returns R2 when curent experience equals previous and differs from penultimate. Returns R1 otherwise"""
+
+        penultimate_interaction = self.get_penultimate_interaction()
+        print "penultimate interaction", penultimate_interaction
+        previous_interaction = self.get_previous_interaction()
+        print "previous interaction", previous_interaction
+
+        if "e1" in intended_interaction.get_label():
+            if previous_interaction is not None \
+                    and (penultimate_interaction is None or "e2" in penultimate_interaction and "e1" in previous_interaction):
+                enacted_interaction = "e1r2"
+            else:
+                enacted_interaction = "e1r1"
+        else:
+            if previous_interaction is not None \
+                    and (penultimate_interaction is None or "e1" in penultimate_interaction and "e2" in previous_interaction):
+                enacted_interaction = "e2r2"
+            else:
+                enacted_interaction = "e2r1"
+
+        self.set_penultimate_interaction(previous_interaction)
+        self.set_previous_interaction(enacted_interaction)
+
+        return enacted_interaction
