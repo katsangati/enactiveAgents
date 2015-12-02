@@ -24,6 +24,7 @@ class Environment:
         self.last_result = result
         return result
 
+
 class ConstructiveEnvironment:
     def __init__(self, agent):
         self.agent = agent
@@ -98,3 +99,61 @@ class TestEnvironment:
         self.set_previous_interaction(enacted_interaction)
 
         return enacted_interaction
+
+class TestEnvironmentD2:
+    """Returns r1 when current experiment is different from previous experiment. Returns r1 otherwise"""
+    def __init__(self):
+        self.previous_experiment = None
+
+    def set_previous_experiment(self, previous_experiment):
+        self.previous_experiment = previous_experiment
+
+    def get_previous_experiment(self):
+        return self.previous_experiment
+
+    def return_result(self, experiment):
+        previous_experiment = self.get_previous_experiment()
+        current_experiment = experiment.get_label()
+
+        if experiment == previous_experiment:
+            result = "r1"
+        else:
+            result = "r2"
+
+        self.set_previous_experiment(experiment)
+
+        return result
+
+
+class TestEnvironmentD3:
+    """Returns R2 when curent experience equals previous and differs from penultimate. Returns R1 otherwise"""
+    def __init__(self):
+        self.penultimate_experiment = None
+        self.previous_experiment = None
+
+    def set_penultimate_experiment(self, penultimate_experiment):
+        self.penultimate_experiment = penultimate_experiment
+
+    def get_penultimate_experiment(self):
+        return self.penultimate_experiment
+
+    def set_previous_experiment(self, previous_experiment):
+        self.previous_experiment = previous_experiment
+
+    def get_previous_experiment(self):
+        return self.previous_experiment
+
+    def return_result(self, experiment):
+        penultimate_experiment = self.get_penultimate_experiment()
+        previous_experiment = self.get_previous_experiment()
+        current_experiment = experiment.get_label()
+
+        if experiment == previous_experiment and experiment != penultimate_experiment:
+            result = "r2"
+        else:
+            result = "r1"
+
+        self.set_penultimate_experiment(previous_experiment)
+        self.set_previous_experiment(experiment)
+
+        return result
