@@ -1,33 +1,53 @@
+import pygame
+
+
 class Environment:
-    def __init__(self, agent):
+    def __init__(self, agent, screen, clock):
         self.agent = agent
+        self.screen = screen
+        self.clock = clock
         self.last_result = None
+
+    def draw_agent(self):
+        self.screen.fill((0, 0, 0))
+        pygame.draw.polygon(self.screen, self.agent.color, self.agent.vertices)
+        pygame.display.flip()
+        self.clock.tick(4)
 
     def return_result(self, experiment):
         result = None
         if experiment.get_label() == 'e1':
             if self.agent.move(1):
                 result = 'r1'  # moved forward
+                self.draw_agent()
             else:
                 result = 'r2'  # bumped
+                self.draw_agent()
         elif experiment.get_label() == 'e2':
             self.agent.rotate(90)
             result = 'r3'
+            self.draw_agent()
         elif experiment.get_label() == 'e3':
             self.agent.rotate(-90)
             result = 'r4'
+            self.draw_agent()
         elif experiment.get_label() == 'e4':
             if self.agent.feel_front(1):
                 result = 'r5'  # clear ahead
+                self.draw_agent()
             else:
                 result = 'r6'  # feel wall
+                self.draw_agent()
+
         self.last_result = result
         return result
 
 
 class ConstructiveEnvironment:
-    def __init__(self, agent):
+    def __init__(self, agent, screen, clock):
         self.agent = agent
+        self.screen = screen
+        self.clock = clock
         self.enacted_interaction = None
 
     def enact_primitive_interaction(self, intended_interaction):
@@ -99,6 +119,7 @@ class TestEnvironment:
         self.set_previous_interaction(enacted_interaction)
 
         return enacted_interaction
+
 
 class TestEnvironmentD2:
     """Returns r1 when current experiment is different from previous experiment. Returns r1 otherwise"""

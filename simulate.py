@@ -36,19 +36,19 @@ def main(mechanism, world, saveimg):
 
         # Initialize environments and existences
         if mechanism == "simple":
-            environment = Environment(kenny)
+            environment = Environment(kenny, screen, clock)
             ex = Existence(primitive_interactions, environment)
         elif mechanism == "recursive":
-            environment = Environment(kenny)
+            environment = Environment(kenny, screen, clock)
             ex = RecursiveExistence(primitive_interactions, environment)
         elif mechanism == "constructive":
-            environment = ConstructiveEnvironment(kenny)
+            environment = ConstructiveEnvironment(kenny, screen, clock)
             ex = ConstructiveExistence(primitive_interactions, environment)
 
         i = 1
 
         while not done:
-            screen.fill((0, 0, 0))
+            # screen.fill((0, 0, 0))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
@@ -57,14 +57,14 @@ def main(mechanism, world, saveimg):
             print (i, step_trace)
             print "\n"
 
-            pygame.draw.polygon(screen, kenny.color, kenny.vertices)
+            # pygame.draw.polygon(screen, kenny.color, kenny.vertices)
 
             if saveimg:
                 # save each frame as image
                 pygame.image.save(screen, output_path + str(format(i, '03'))+".jpeg")
 
-            pygame.display.flip()
-            clock.tick(10)
+            # pygame.display.flip()
+            # clock.tick(3)
             i += 1
 
     elif world == "test":
@@ -80,7 +80,7 @@ def main(mechanism, world, saveimg):
             environment = TestEnvironment()
             ex = ConstructiveExistence(primitive_interactions, environment)
 
-        for i in range(0, 50):
+        for i in range(0, 20):
             step_trace = ex.step()
             print (i, step_trace)
             print "\n"

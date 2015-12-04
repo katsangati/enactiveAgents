@@ -13,6 +13,9 @@ class Experiment:
     def is_abstract(self):
         return False
 
+    def __repr__(self):
+        return "{0}".format(self.get_label())
+
 
 class RecursiveExperiment(Experiment):
     """ An experiment that can be primitive or abstract.
@@ -43,6 +46,3 @@ class RecursiveExperiment(Experiment):
 
     def get_enacted_interactions(self):
         return self.enacted_interactions
-
-    def __repr__(self):
-        return "{0}".format(self.get_label())
