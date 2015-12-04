@@ -68,8 +68,8 @@ def main(mechanism, world, saveimg):
             i += 1
 
     elif world == "test":
-        primitive_interactions = {"a": ("e1", "r1", -1), "b": ("e1", "r2", 1),
-                                  "c": ("e2", "r1", -1), "d": ("e2", "r2", 1)}
+        primitive_interactions = {"i1": ("e1", "r1", -1), "i2": ("e1", "r2", 1),
+                                  "i3": ("e2", "r1", -1), "i4": ("e2", "r2", 1)}
         if mechanism == "simple":
             environment = TestEnvironmentD2()
             ex = Existence(primitive_interactions, environment)

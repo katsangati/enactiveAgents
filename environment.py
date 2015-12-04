@@ -98,9 +98,9 @@ class TestEnvironment:
         """Returns R2 when curent experience equals previous and differs from penultimate. Returns R1 otherwise"""
 
         penultimate_interaction = self.get_penultimate_interaction()
-        print "penultimate interaction", penultimate_interaction
+        # print "penultimate interaction", penultimate_interaction
         previous_interaction = self.get_previous_interaction()
-        print "previous interaction", previous_interaction
+        # print "previous interaction", previous_interaction
 
         if "e1" in intended_interaction.get_label():
             if previous_interaction is not None \

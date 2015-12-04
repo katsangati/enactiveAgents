@@ -1,7 +1,7 @@
 from interaction import Interaction
 from experiment import Experiment, RecursiveExperiment
 from result import Result
-from anticipation import Anticipation, RecursiveAnticipation
+from anticipation import Anticipation, RecursiveAnticipation, ConstructiveAnticipation
 import random
 
 __author__ = 'katja'
@@ -105,7 +105,7 @@ class Existence:
 
     def select_experiment(self, anticipations):
         if len(anticipations) > 0:
-            #anticipations.sort(key=lambda x: x.get_proclivity(), reverse=True)  # choose by proclivity
+            #anticipations.sort(key=lambda x: x.compare(), reverse=True)  # choose by proclivity
             anticipations.sort(key=lambda x: x.compare(), reverse=True)  # choose by valence
             afforded_interaction = anticipations[0].get_interaction()
             if afforded_interaction.get_valence() >= 0:
@@ -239,7 +239,7 @@ class RecursiveExistence(Existence):
         return self.addget_primitive_interaction(experiment, result)
 
     def select_experiment(self, anticipations):
-        anticipations.sort(key=lambda x: x.get_proclivity(), reverse=True)  # choose by valence
+        anticipations.sort(key=lambda x: x.compare(), reverse=True)  # choose by valence
         selected_anticipation = anticipations[0]
         return selected_anticipation.get_experiment()
 
@@ -357,32 +357,19 @@ class ConstructiveExistence(RecursiveExistence):
     def __init__(self, primitive_interactions, environment):
         RecursiveExistence.__init__(self, primitive_interactions, environment)
 
-    # Existence 50 and 50.1
+    # Existence 50.2
     def step(self):
         anticipations = self.anticipate()
         print "Anticipations: ", anticipations
-        experiment = self.select_experiment(anticipations)  # RecursiveExperiment
-        print "Selected experiment: ", experiment
-        intended_interaction = experiment.get_intended_interaction()
+        intended_interaction = self.select_interaction(anticipations)
         print "Intended interaction: ", intended_interaction
         enacted_interaction = self.enact(intended_interaction)
         print "Enacted interaction: ", enacted_interaction
-        # existence 50
+
         if enacted_interaction != intended_interaction:
-            experiment.add_enacted_interaction(enacted_interaction)
+            intended_interaction.add_alternative_interaction(enacted_interaction)
 
-        # # existence 50.1
-        # if enacted_interaction != intended_interaction:
-        #     label = enacted_interaction.get_label().upper()
-        #     failed_result = self.addget_result(label)
-        #     if enacted_interaction.get_experiment() is None:
-        #         enacted_interaction.set_experiment(experiment)
-        #         enacted_interaction.set_result(failed_result)
-        #     elif enacted_interaction.get_experiment() != experiment:
-        #         valence = enacted_interaction.get_valence()
-        #         enacted_interaction = self.addget_primitive_interaction(experiment, failed_result, valence)
-
-        if enacted_interaction.get_valence() > 0:
+        if enacted_interaction.get_valence() >= 0:
             self.mood = 'HAPPY'
         else:
             self.mood = 'SAD'
@@ -390,24 +377,6 @@ class ConstructiveExistence(RecursiveExistence):
         self.learn_recursive_interaction(enacted_interaction)
 
         return enacted_interaction.__repr__() + " " + self.mood
-
-    # # Existence 50.2
-    # def step(self):
-    #     anticipations = self.anticipate()
-    #     intended_interaction = self.select_interaction(anticipations)
-    #     enacted_interaction = self.enact(intended_interaction)
-    #
-    #     if enacted_interaction != intended_interaction:
-    #         intended_interaction.add_alternative_interaction(enacted_interaction)
-    #
-    #     if enacted_interaction.get_valence() >= 0:
-    #         self.mood = 'HAPPY'
-    #     else:
-    #         self.mood = 'SAD'
-    #
-    #     self.learn_recursive_interaction(enacted_interaction)
-    #
-    #     return enacted_interaction.__repr__() + " " + self.mood
 
     def initialize_interactions(self, primitive_interactions):
         for key in primitive_interactions:
@@ -417,16 +386,11 @@ class ConstructiveExistence(RecursiveExistence):
             result_label = primitive_interactions[key][1]
             interaction_label = experiment_label + result_label
             valence = primitive_interactions[key][2]
-            primitive_interaction = self.addget_constructive_interaction(interaction_label, valence, meaning)
+            primitive_interaction = self.addget_interaction(interaction_label)
+            primitive_interaction.set_valence(valence)
+            primitive_interaction.set_meaning(meaning)
+            # creating default experiments to begin with
             self.addget_abstract_experiment(primitive_interaction)
-
-    def addget_constructive_interaction(self, label, valence=None, meaning=None):
-        if label not in self.INTERACTIONS:
-            interaction = Interaction(label)
-            interaction.set_valence(valence)
-            interaction.set_meaning(meaning)
-            self.INTERACTIONS[label] = interaction
-        return self.INTERACTIONS[label]
 
     def addget_abstract_experiment(self, interaction):
         label = interaction.get_label().upper()
@@ -453,14 +417,21 @@ class ConstructiveExistence(RecursiveExistence):
             self.addget_abstract_experiment(interaction)
         return interaction
 
+    # Existence 50.2
     def anticipate(self):
         anticipations = self.get_default_anticipations()
+        print "Default anticipations: ", anticipations
         activated_interactions = self.get_activated_interactions()
+        # print "Activated interactions: ", activated_interactions
         if self.context_interaction is not None:
             for activated_interaction in activated_interactions:
-                experiment = activated_interaction.get_post_interaction().get_experiment()
-                proclivity = activated_interaction.get_weight() * activated_interaction.get_post_interaction().get_valence()
-                anticipation = RecursiveAnticipation(experiment, proclivity)
+                # print "activated interaction: " + activated_interaction.__repr__()
+                proposed_interaction = activated_interaction.get_post_interaction()
+                # print "activated experiment: " + experiment.get_label()
+                proclivity = activated_interaction.get_weight() * proposed_interaction.get_valence()
+                # print "activated proclivity: " + str(proclivity)
+                anticipation = ConstructiveAnticipation(proposed_interaction, proclivity)
+                # print "activated anticipation: " + anticipation.__repr__()
                 if anticipation not in anticipations:
                     anticipations.append(anticipation)
                 else:
@@ -468,69 +439,31 @@ class ConstructiveExistence(RecursiveExistence):
                     anticipations[index].add_proclivity(proclivity)
                 # print "Afforded " + anticipation.__repr__()
 
-        for anticipation in anticipations:
-            enacted_interactions = anticipation.get_experiment().get_enacted_interactions()
-            for interaction in enacted_interactions:
-                for activated_interaction in activated_interactions:
-                    if interaction == activated_interaction.get_post_interaction():
-                        proclivity = activated_interaction.get_weight() * interaction.get_valence()
-                        anticipation.add_proclivity(proclivity)
+            for anticipation in anticipations:
+                alternative_interactions = anticipation.get_interaction().get_alternative_interactions()
+                for interaction in alternative_interactions:
+                    for activated_interaction in activated_interactions:
+                        if interaction == activated_interaction.get_post_interaction():
+                            proclivity = activated_interaction.get_weight() * interaction.get_valence()
+                            anticipation.add_proclivity(proclivity)
+
         return anticipations
 
-    # # Existence 50.2
-    # def anticipate(self):
-    #     anticipations = self.get_default_anticipations()
-    #     # print "Default anticipations: ", anticipations
-    #     activated_interactions = self.get_activated_interactions()
-    #     if self.context_interaction is not None:
-    #         for activated_interaction in activated_interactions:
-    #             # print "activated interaction: " + activated_interaction.__repr__()
-    #             proposed_interaction = activated_interaction.get_post_interaction()
-    #             # print "activated experiment: " + experiment.get_label()
-    #             proclivity = activated_interaction.get_weight() * proposed_interaction.get_valence()
-    #             # print "activated proclivity: " + str(proclivity)
-    #             anticipation = RecursiveAnticipation(proposed_interaction, proclivity) # Anticipation32
-    #             # print "activated anticipation: " + anticipation.__repr__()
-    #             if anticipation not in anticipations:
-    #                 anticipations.append(anticipation)
-    #             else:
-    #                 index = anticipations.index(anticipation)
-    #                 anticipations[index].add_proclivity(proclivity)
-    #             # print "Afforded " + anticipation.__repr__()
-    #
-    #     for anticipation in anticipations:
-    #         alternative_interactions = anticipation.get_interaction().get_alternative_interactions()
-    #         for interaction in alternative_interactions:
-    #             for activated_interaction in activated_interactions:
-    #                 if interaction == activated_interaction.get_post_interaction():
-    #                     proclivity = activated_interaction.get_weight() * interaction.get_valence()
-    #                     anticipation.add_proclivity(proclivity)
-    #
-    #     return anticipations
-
+    # Existence 50.2
     def get_default_anticipations(self):
         anticipations = []
-        for experiment in self.EXPERIMENTS.values():
-            default_experiment = experiment
-            if default_experiment.get_intended_interaction().is_primitive():
-                anticipation = RecursiveAnticipation(experiment, 0)
+        for interaction in self.INTERACTIONS.values():
+            if interaction.is_primitive():
+                # print "interaction is primitive"
+                anticipation = ConstructiveAnticipation(interaction, 0)
+                # print "adding anticipation", anticipation
                 anticipations.append(anticipation)
-        random.shuffle(anticipations) # shuffle order
         return anticipations
-
-    # # Existence 50.2
-    # def get_default_anticipations(self):
-    #     anticipations = []
-    #     for interaction in self.INTERACTIONS.values():
-    #         if interaction.is_primitive():
-    #             anticipation = RecursiveAnticipation(interaction, 0) # Anticipation32
-    #             anticipations.append(anticipation)
-    #     return anticipations
 
     def enact(self, intended_interaction):
         if intended_interaction.is_primitive():
             enacted_interaction_label = self.environment.enact_primitive_interaction(intended_interaction)
-            enacted_interaction = self.addget_constructive_interaction(enacted_interaction_label)
+            enacted_interaction = self.addget_interaction(enacted_interaction_label)
             return enacted_interaction
         else:
             enacted_pre_interaction = self.enact(intended_interaction.get_pre_interaction())
@@ -541,12 +474,12 @@ class ConstructiveExistence(RecursiveExistence):
                 return self.addget_composite_interaction(enacted_pre_interaction, enacted_post_interaction)
 
     def select_interaction(self, anticipations):
-        anticipations.sort(key=lambda x: x.get_proclivity(), reverse=True)  # choose by proclivity
+        anticipations.sort(key=lambda x: x.compare(), reverse=True)  # choose by proclivity
         selected_anticipation = anticipations[0]
         intended_interaction = selected_anticipation.get_interaction()
-        if intended_interaction.get_valence() < 0:
-            intended_interaction = self.get_random_interaction(intended_interaction)
-            print "Don't like the affordance, intending random interaction..."
+        # if intended_interaction.get_valence() < 0:
+        #     intended_interaction = self.get_random_interaction(intended_interaction)
+        #     print "Don't like the affordance, intending random interaction..."
         return intended_interaction
 
     def get_random_interaction(self, interaction):
@@ -559,3 +492,73 @@ class ConstructiveExistence(RecursiveExistence):
             while chosen_experiment == bad_experiment:
                 random_interaction = random.choice(self.INTERACTIONS.values())
             return random_interaction
+
+    # # Existence 50 and 50.1
+    # def step(self):
+    #     anticipations = self.anticipate()
+    #     print "Anticipations: ", anticipations
+    #     experiment = self.select_experiment(anticipations)  # RecursiveExperiment
+    #     print "Selected experiment: ", experiment
+    #     intended_interaction = experiment.get_intended_interaction()
+    #     print "Intended interaction: ", intended_interaction
+    #     enacted_interaction = self.enact(intended_interaction)
+    #     print "Enacted interaction: ", enacted_interaction
+    #     # existence 50
+    #     if enacted_interaction != intended_interaction:
+    #         experiment.add_enacted_interaction(enacted_interaction)
+    #
+    #     # # existence 50.1
+    #     # if enacted_interaction != intended_interaction:
+    #     #     label = enacted_interaction.get_label().upper()
+    #     #     failed_result = self.addget_result(label)
+    #     #     if enacted_interaction.get_experiment() is None:
+    #     #         enacted_interaction.set_experiment(experiment)
+    #     #         enacted_interaction.set_result(failed_result)
+    #     #     elif enacted_interaction.get_experiment() != experiment:
+    #     #         valence = enacted_interaction.get_valence()
+    #     #         enacted_interaction = self.addget_primitive_interaction(experiment, failed_result, valence)
+    #
+    #     if enacted_interaction.get_valence() > 0:
+    #         self.mood = 'HAPPY'
+    #     else:
+    #         self.mood = 'SAD'
+    #
+    #     self.learn_recursive_interaction(enacted_interaction)
+    #
+    #     return enacted_interaction.__repr__() + " " + self.mood
+
+    # def anticipate(self):
+    #     """The proclivity of anticipation is now balanced depending on the odds of obtaining the afforded interaction
+    #     and the odds of obtaining a different enacted interaction"""
+    #     anticipations = self.get_default_anticipations()
+    #     activated_interactions = self.get_activated_interactions()
+    #     if self.context_interaction is not None:
+    #         for activated_interaction in activated_interactions:
+    #             experiment = activated_interaction.get_post_interaction().get_experiment()
+    #             proclivity = activated_interaction.get_weight() * activated_interaction.get_post_interaction().get_valence()
+    #             anticipation = RecursiveAnticipation(experiment, proclivity)
+    #             if anticipation not in anticipations:
+    #                 anticipations.append(anticipation)
+    #             else:
+    #                 index = anticipations.index(anticipation)
+    #                 anticipations[index].add_proclivity(proclivity)
+    #             # print "Afforded " + anticipation.__repr__()
+    #
+    #     for anticipation in anticipations:
+    #         enacted_interactions = anticipation.get_experiment().get_enacted_interactions()
+    #         for interaction in enacted_interactions:
+    #             for activated_interaction in activated_interactions:
+    #                 if interaction == activated_interaction.get_post_interaction():
+    #                     proclivity = activated_interaction.get_weight() * interaction.get_valence()
+    #                     anticipation.add_proclivity(proclivity)
+    #     return anticipations
+
+    # def get_default_anticipations(self):
+    #     anticipations = []
+    #     for experiment in self.EXPERIMENTS.values():
+    #         default_experiment = experiment
+    #         if default_experiment.get_intended_interaction().is_primitive():
+    #             anticipation = RecursiveAnticipation(experiment, 0)
+    #             anticipations.append(anticipation)
+    #     random.shuffle(anticipations) # shuffle order
+    #     return anticipations
