@@ -19,7 +19,11 @@ class Environment:
         if experiment.get_label() == 'e1':
             if self.agent.move(1):
                 result = 'r1'  # moved forward
-                self.draw_agent()
+                self.screen.fill((0, 0, 0))
+                pygame.draw.polygon(self.screen, self.agent.color, self.agent.vertices)
+                pygame.display.flip()
+                self.clock.tick(4)
+
             else:
                 result = 'r2'  # bumped
                 self.draw_agent()

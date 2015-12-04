@@ -13,7 +13,7 @@ class Agent:
     def __init__(self, center):
         self.center = center
         self.angle = 90
-        self.vertices = self.get_vertices()
+        self.get_vertices()
         self.color = BLUE
 
     def get_vertices(self):
@@ -21,7 +21,7 @@ class Agent:
         a = self.rotate_point((self.center[0]-1*UNIT, self.center[1]-1*UNIT))
         b = self.rotate_point((self.center[0]-1*UNIT, self.center[1]+1*UNIT))
         c = self.rotate_point((self.center[0]+2*UNIT, self.center[1]))  # triangle head
-        return [a, b, c]
+        self.vertices = [a,b,c]
 
     def rotate_point(self, point):
         """Rotates a point around another centerPoint. Angle is in degrees.
