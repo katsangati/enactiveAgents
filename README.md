@@ -4,7 +4,9 @@ This is a Python implementation of Enactivist Cognitive Architecture, following 
 Acknowledgements to other Python implementations available on github:
 
 https://github.com/martinxyz/ideal-mooc
+
 https://github.com/lupoglaz/DevAICourse
+
 
 Help on running the simulation is available by typing:
 
