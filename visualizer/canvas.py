@@ -9,6 +9,7 @@ BLUE = (0, 128, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
+
 class Agent:
     def __init__(self, center):
         self.center = center

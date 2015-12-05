@@ -19,11 +19,7 @@ class Environment:
         if experiment.get_label() == 'e1':
             if self.agent.move(1):
                 result = 'r1'  # moved forward
-                self.screen.fill((0, 0, 0))
-                pygame.draw.polygon(self.screen, self.agent.color, self.agent.vertices)
-                pygame.display.flip()
-                self.clock.tick(4)
-
+                self.draw_agent()
             else:
                 result = 'r2'  # bumped
                 self.draw_agent()
@@ -52,7 +48,13 @@ class ConstructiveEnvironment:
         self.agent = agent
         self.screen = screen
         self.clock = clock
-        self.enacted_interaction = None
+        self.last_interaction = None
+
+    def draw_agent(self):
+        self.screen.fill((0, 0, 0))
+        pygame.draw.polygon(self.screen, self.agent.color, self.agent.vertices)
+        pygame.display.flip()
+        self.clock.tick(4)
 
     def enact_primitive_interaction(self, intended_interaction):
         """Returns R2 when curent experience equals previous and differs from penultimate. Returns R1 otherwise"""
@@ -61,22 +63,28 @@ class ConstructiveEnvironment:
         if experiment == 'e1':
             if self.agent.move(1):
                 result = 'r1'  # moved forward
+                self.draw_agent()
             else:
                 result = 'r2'  # bumped
+                self.draw_agent()
         elif experiment == 'e2':
             self.agent.rotate(90)
             result = 'r3'
+            self.draw_agent()
         elif experiment == 'e3':
             self.agent.rotate(-90)
             result = 'r4'
+            self.draw_agent()
         elif experiment == 'e4':
             if self.agent.feel_front(1):
                 result = 'r5'  # clear ahead
+                self.draw_agent()
             else:
                 result = 'r6'  # feel wall
+                self.draw_agent()
 
         enacted_interaction = experiment+result
-        self.enacted_interaction = enacted_interaction
+        self.last_interaction = enacted_interaction
 
         return enacted_interaction
 

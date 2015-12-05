@@ -359,8 +359,10 @@ class ConstructiveExistence(RecursiveExistence):
 
     # Existence 50.2
     def step(self):
+        print "Memory: ", self.INTERACTIONS.keys()
         anticipations = self.anticipate()
-        print "Anticipations: ", anticipations
+        for anticipation in anticipations:
+            print "Anticipated: ", anticipation
         intended_interaction = self.select_interaction(anticipations)
         print "Intended interaction: ", intended_interaction
         enacted_interaction = self.enact(intended_interaction)
@@ -368,6 +370,7 @@ class ConstructiveExistence(RecursiveExistence):
 
         if enacted_interaction != intended_interaction:
             intended_interaction.add_alternative_interaction(enacted_interaction)
+            print "Alternative interactions:", intended_interaction.get_alternative_interactions()
 
         if enacted_interaction.get_valence() >= 0:
             self.mood = 'HAPPY'
@@ -380,7 +383,6 @@ class ConstructiveExistence(RecursiveExistence):
 
     def initialize_interactions(self, primitive_interactions):
         for key in primitive_interactions:
-            print "initializing...", key
             meaning = key
             experiment_label = primitive_interactions[key][0]
             result_label = primitive_interactions[key][1]
@@ -425,11 +427,9 @@ class ConstructiveExistence(RecursiveExistence):
         # print "Activated interactions: ", activated_interactions
         if self.context_interaction is not None:
             for activated_interaction in activated_interactions:
-                # print "activated interaction: " + activated_interaction.__repr__()
                 proposed_interaction = activated_interaction.get_post_interaction()
                 # print "activated experiment: " + experiment.get_label()
                 proclivity = activated_interaction.get_weight() * proposed_interaction.get_valence()
-                # print "activated proclivity: " + str(proclivity)
                 anticipation = ConstructiveAnticipation(proposed_interaction, proclivity)
                 # print "activated anticipation: " + anticipation.__repr__()
                 if anticipation not in anticipations:
@@ -440,13 +440,14 @@ class ConstructiveExistence(RecursiveExistence):
                 # print "Afforded " + anticipation.__repr__()
 
             for anticipation in anticipations:
+                index = anticipations.index(anticipation)
+
                 alternative_interactions = anticipation.get_interaction().get_alternative_interactions()
                 for interaction in alternative_interactions:
                     for activated_interaction in activated_interactions:
                         if interaction == activated_interaction.get_post_interaction():
                             proclivity = activated_interaction.get_weight() * interaction.get_valence()
-                            anticipation.add_proclivity(proclivity)
-
+                            anticipations[index].add_proclivity(proclivity)
         return anticipations
 
     # Existence 50.2
@@ -458,6 +459,8 @@ class ConstructiveExistence(RecursiveExistence):
                 anticipation = ConstructiveAnticipation(interaction, 0)
                 # print "adding anticipation", anticipation
                 anticipations.append(anticipation)
+        anticipations.sort(key=lambda x: x.get_interaction().get_valence(), reverse=True)
+        # anticipations.sort(key=lambda x: x.get_interaction().get_label())
         return anticipations
 
     def enact(self, intended_interaction):

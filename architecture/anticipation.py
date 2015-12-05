@@ -58,3 +58,7 @@ class ConstructiveAnticipation(Anticipation):
     def compare(self):
         """Anticipations are compared by proclivity they have"""
         return self.get_proclivity()
+
+    def __eq__(self, other):
+        """Anticipations are equal to each other if they propose the same experiment"""
+        return self.get_interaction() == other.get_interaction()

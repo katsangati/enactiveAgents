@@ -30,7 +30,7 @@ def main(mechanism, world, saveimg):
                           random.randint(canvas.BORDER,canvas.HEIGHT-canvas.BORDER))
         kenny = canvas.Agent(start_location)
 
-        primitive_interactions = {"move forward": ("e1", "r1", 5), "bump": ("e1", "r2", -10),
+        primitive_interactions = {"move forward": ("e1", "r1", 2), "bump": ("e1", "r2", -50),
                                   "turn left": ("e2", "r3", -1), "turn right": ("e3", "r4", -1),
                                   "touch empty": ("e4", "r5", -1), "touch wall": ("e4", "r6", -2)}
 
@@ -80,7 +80,7 @@ def main(mechanism, world, saveimg):
             environment = TestEnvironment()
             ex = ConstructiveExistence(primitive_interactions, environment)
 
-        for i in range(0, 20):
+        for i in range(0, 15):
             step_trace = ex.step()
             print (i, step_trace)
             print "\n"
