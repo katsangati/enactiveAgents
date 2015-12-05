@@ -1,6 +1,9 @@
 # enactiveAgents
 
 This is a Python implementation of Enactivist Cognitive Architecture, following materials present on [Developmental AI MOOC](http://liris.cnrs.fr/ideal/mooc/).
+Acknowledgements to other Python implementations available on github:
+https://github.com/martinxyz/ideal-mooc
+https://github.com/lupoglaz/DevAICourse
 
 Help on running the simulation is available by typing:
 
