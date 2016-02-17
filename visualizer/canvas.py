@@ -11,6 +11,9 @@ GREEN = (0, 255, 0)
 
 
 class Agent:
+    """
+    Class that implements agent and environment visualization.
+    """
     def __init__(self, center):
         self.center = center
         self.angle = 90
@@ -25,8 +28,8 @@ class Agent:
         self.vertices = [a,b,c]
 
     def rotate_point(self, point):
-        """Rotates a point around another centerPoint. Angle is in degrees.
-        Rotation is counter-clockwise"""
+        """Rotates a point around another center point. Angle is in degrees.
+        Rotation is counter-clockwise."""
         a = math.radians(self.angle)
         temp_point = point[0]-self.center[0], point[1]-self.center[1]
         temp_point = (temp_point[0]*math.cos(a)-temp_point[1]*math.sin(a), temp_point[0]*math.sin(a)+temp_point[1]*math.cos(a))
@@ -34,6 +37,7 @@ class Agent:
         return temp_point
 
     def move(self, steps):
+        """Displaces the agent by a number of steps."""
         self.color = BLUE
         a = math.radians(self.angle)
         sine = math.sin(a)
@@ -50,6 +54,7 @@ class Agent:
         return True
 
     def rotate(self, angle):
+        """Rotates the agent in place by some angle."""
         self.color = BLUE
         self.angle += angle
         old_vertices = deepcopy(self.vertices)
@@ -59,6 +64,7 @@ class Agent:
             self.angle -= angle
 
     def feel_front(self, steps):
+        """Checks whether there is an obstacle ahead. Returns True if not."""
         self.color = GREEN
         a = math.radians(self.angle)
         sine = math.sin(a)
@@ -73,12 +79,12 @@ class Agent:
         return clear_ahead
 
     def check_inside(self):
-        """returns true if all the vertices are inside the field"""
+        """Returns True if all the vertices are inside the field."""
         if self.center[0]-BORDER < 0 or self.center[0]+BORDER > WIDTH:
             return False
         if self.center[1]-BORDER < 0 or self.center[1]+BORDER > HEIGHT:
             return False
         return True
 
-    def feel(self):
-        return None
+    # def feel(self):
+    #     return None

@@ -1,4 +1,3 @@
-from interaction import Interaction
 __author__ = 'katja'
 
 
@@ -18,7 +17,8 @@ class Experiment:
 
 
 class RecursiveExperiment(Experiment):
-    """ An experiment that can be primitive or abstract.
+    """
+    An experiment that can be primitive or abstract.
     An abstract experiment has an intended_interaction, which is a sensorimotor pattern an agent can try to enact.
     It also has a list of enacted_interactions, which are interactions that might be enacted instead of intended ones.
     """

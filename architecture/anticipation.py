@@ -2,9 +2,7 @@ __author__ = 'katja'
 
 
 class Anticipation:
-    """Anticipation is created from each proposed primitive interaction.
-    Anticipations can be compared based on their valence.
-    """
+    """Anticipation is created from each proposed primitive interaction."""
     def __init__(self, interaction, proclivity):
         self.interaction = interaction
         self.proclivity = proclivity
@@ -27,7 +25,7 @@ class Anticipation:
 
 
 class RecursiveAnticipation(Anticipation):
-    """An Anticipation is created for each proposed experiment."""
+    """An recursive anticipation is created for each proposed experiment."""
 
     def __init__(self, experiment, proclivity):
         Anticipation.__init__(self, None, proclivity)

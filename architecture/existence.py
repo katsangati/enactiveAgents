@@ -10,9 +10,10 @@ __author__ = 'katja'
 class Existence:
     """A class implementing the agent control-and-learning mechanism.
     The agent operates by executing and learning interactions, and is motivated to perform those interactions that have
-    positive valences. Interactions can be of two types. Primitive interactions are tuples of (experiment, result, valence).
-    Composite interactions are interactions which consist of primitive interactions.
-    When a given Experience is performed and a given Result is obtained, the corresponding Interaction is considered
+    positive valences.
+    Interactions can be of two types. Primitive interactions are tuples of (experiment, result, valence). Composite
+    interactions are interactions which consist of primitive interactions.
+    When a given experiment is performed and a given result is obtained, the corresponding Interaction is considered
     enacted.
     """
 
@@ -21,19 +22,28 @@ class Existence:
     RESULTS = dict()
 
     def __init__(self, primitive_interactions, environment):
-        """Initialize existence with a set of primitive interactions provided as a dictionary:
-        {(str) interaction meaning: ((str) experiment, (str) result, (int) valence)"""
+        """
+        Initialize existence with a set of primitive interactions and environment.
+        :param primitive_interactions: (dict) of primitive interactions of the form
+        {(str) interaction meaning: ((str) experiment, (str) result, (int) valence)}
+        :param environment: (Environment) that controls which results are returned for a given primitive experiment
+        :return: (Existence)
+        """
         self.context_interaction = None
         self.mood = None
         self.environment = environment
         self.initialize_interactions(primitive_interactions)
 
     def step(self):
+        """
+        Execute a single simulation step.
+        :return: (str) performed interaction and mood
+        """
         print "Context: ", self.context_interaction
-        anticipations = self.anticipate()
-        experiment = self.select_experiment(anticipations)
-        result_label = self.environment.return_result(experiment)
-        result = self.addget_result(result_label)
+        anticipations = self.anticipate()  # anticipate possible interactions
+        experiment = self.select_experiment(anticipations)  # select the best experiment
+        result_label = self.environment.return_result(experiment)  # consult the world and return result
+        result = self.addget_result(result_label)  # add result to the dictionary
         enacted_interaction = self.get_interaction(experiment.get_label() + result.get_label())
         print "Enacted ", enacted_interaction
 
@@ -48,6 +58,11 @@ class Existence:
         return experiment.get_label() + result.get_label() + " " + self.mood
 
     def initialize_interactions(self, primitive_interactions):
+        """
+        Add primitive interactions to existence
+        :param primitive_interactions: a set of primitive interactions provided as a dictionary
+        {(str) interaction meaning: ((str) experiment, (str) result, (int) valence)}
+        """
         for interaction in primitive_interactions:
             meaning = interaction
             experiment_label = primitive_interactions[interaction][0]
@@ -58,6 +73,14 @@ class Existence:
             self.addget_primitive_interaction(experiment, result, valence, meaning)
 
     def addget_primitive_interaction(self, experiment, result, valence=None, meaning=None):
+        """
+        If a primitive interaction is not in the INTERACTIONS dictionary, add it. Otherwise just return it.
+        :param experiment: (str) primitive experiment
+        :param result: (str) primitive result
+        :param valence: (int) valence of the interaction
+        :param meaning: (str) observer's meaning of the interaction
+        :return: (interaction) primitive interaction from the INTERACTIONS dictionary
+        """
         label = experiment.get_label() + result.get_label()
         if label not in self.INTERACTIONS:
             interaction = Interaction(label)
@@ -69,9 +92,15 @@ class Existence:
         return self.INTERACTIONS[label]
 
     def learn_composite_interaction(self, context_interaction, enacted_interaction):
+        """
+        Learn a new composite interaction or reinforce it if already known.
+        :param context_interaction: (Interaction) at time t-1
+        :param enacted_interaction: (Interaction) just performed
+        """
         if context_interaction is not None:
             label = context_interaction.get_label() + enacted_interaction.get_label()
             if label not in self.INTERACTIONS:
+                # valence is a sum of primitive interactions
                 valence = context_interaction.get_valence() + enacted_interaction.get_valence()
                 interaction = Interaction(label)
                 interaction.set_pre_interaction(context_interaction)
@@ -85,25 +114,38 @@ class Existence:
                 interaction.increment_weight()
 
     def anticipate(self):
+        """
+        Anticipate possible interactions based on current context.
+        :return: (list) of Anticipations
+        """
         anticipations = []
         if self.context_interaction is not None:
             activated_interactions = self.get_activated_interactions()
             for activated_interaction in activated_interactions:
+                # retrieve proposed interactions
                 proposed_interaction = activated_interaction.get_post_interaction()
+                # proclivity is a product of the weight of the whole interaction and a valence of proposed
                 proclivity = activated_interaction.get_weight() * proposed_interaction.get_valence()
                 anticipations.append(Anticipation(proposed_interaction, proclivity))
                 print "Afforded: ", proposed_interaction, " proclivity: " + str(proclivity)
         return anticipations
 
     def get_activated_interactions(self):
+        """
+        Retrieve activated interactions based on current context.
+        :return: (list) of Interactions
+        """
         activated_interactions = []
+        # loop through all known interactions
         for key in self.INTERACTIONS:
             activated_interaction = self.INTERACTIONS[key]
+            # see if known interaction's pre-interactions is the same as interaction performed at t-1
             if activated_interaction.get_pre_interaction() == self.context_interaction:
                 activated_interactions.append(activated_interaction)
         return activated_interactions
 
     def select_experiment(self, anticipations):
+        """Select experiment from proposed anticipations"""
         if len(anticipations) > 0:
             #anticipations.sort(key=lambda x: x.compare(), reverse=True)  # choose by proclivity
             anticipations.sort(key=lambda x: x.compare(), reverse=True)  # choose by valence
@@ -113,9 +155,11 @@ class Existence:
                 print "Intending ", intended_interaction
                 chosen_experiment = intended_interaction.get_experiment()
             else:
+                # if proposed interaction leads to negative valence, choose at random
                 chosen_experiment = self.get_random_experiment(afforded_interaction)
                 print "Don't like the affordance, intending experiment " + chosen_experiment.get_label()
         else:
+            # if nothing was anticipated, choose at random
             chosen_experiment = self.get_random_experiment(None)
             print "Don't know what to do, intending experiment " + chosen_experiment.get_label()
         return chosen_experiment
@@ -125,6 +169,7 @@ class Existence:
         if interaction is None:
             return random_experiment
         else:
+            # trying to choose a random experiment but avoid choosing one that was part of the rejected interaction
             bad_experiment = interaction.get_experiment()
             chosen_experiment = random.choice(self.EXPERIMENTS.values())
             while chosen_experiment == bad_experiment:
@@ -155,7 +200,7 @@ class Existence:
 
 class RecursiveExistence(Existence):
     """Implements recursive self-programming.
-    Context is now of depth 2: prev_context_interaction and context_interaction"""
+    Context is now of depth 2: prev_context_interaction at t-2, and context_interaction at t-1"""
 
     def __init__(self, primitive_interactions, environment):
         """Initialize existence with a set of primitive interactions provided as a dictionary:
@@ -164,6 +209,7 @@ class RecursiveExistence(Existence):
         self.context_pair_interaction = None  # context at previous two steps (t-2, t-1)
 
     def step(self):
+        print "Memory: ", self.INTERACTIONS.keys()
         anticipations = self.anticipate()
         for anticipation in anticipations:
             print "Anticipated: ", anticipation
@@ -271,7 +317,7 @@ class RecursiveExistence(Existence):
             if not experiment.is_abstract:
                 anticipation = RecursiveAnticipation(experiment, 0)
                 anticipations.append(anticipation)
-        # random.shuffle(anticipations) # shuffle order
+        random.shuffle(anticipations) # shuffle order
         return anticipations
 
     def get_activated_interactions(self):
@@ -354,12 +400,15 @@ class RecursiveExistence(Existence):
 
 
 class ConstructiveExistence(RecursiveExistence):
+    """
+    In constructive existence the basic unit of analysis and implementation is interaction, not experiments and results.
+    """
     def __init__(self, primitive_interactions, environment):
         RecursiveExistence.__init__(self, primitive_interactions, environment)
 
     # Existence 50.2
     def step(self):
-        print "Memory: ", self.INTERACTIONS.keys()
+        # print "Memory: ", self.INTERACTIONS.keys()
         anticipations = self.anticipate()
         for anticipation in anticipations:
             print "Anticipated: ", anticipation
@@ -368,6 +417,7 @@ class ConstructiveExistence(RecursiveExistence):
         enacted_interaction = self.enact(intended_interaction)
         print "Enacted interaction: ", enacted_interaction
 
+        # if intended interaction failed, record the alternative
         if enacted_interaction != intended_interaction:
             intended_interaction.add_alternative_interaction(enacted_interaction)
             print "Alternative interactions:", intended_interaction.get_alternative_interactions()
@@ -395,6 +445,9 @@ class ConstructiveExistence(RecursiveExistence):
             self.addget_abstract_experiment(primitive_interaction)
 
     def addget_abstract_experiment(self, interaction):
+        """
+        All experiments are now abstract, namely they are interactions.
+        """
         label = interaction.get_label().upper()
         if label not in self.EXPERIMENTS:
             abstract_experiment = RecursiveExperiment(label)
@@ -436,15 +489,16 @@ class ConstructiveExistence(RecursiveExistence):
                     anticipations.append(anticipation)
                 else:
                     index = anticipations.index(anticipation)
+                    # increment proclivity if anticipation is already in the list
                     anticipations[index].add_proclivity(proclivity)
                 # print "Afforded " + anticipation.__repr__()
 
             for anticipation in anticipations:
                 index = anticipations.index(anticipation)
-
                 alternative_interactions = anticipation.get_interaction().get_alternative_interactions()
                 for interaction in alternative_interactions:
                     for activated_interaction in activated_interactions:
+                        # combine proclivity with alternative interactions
                         if interaction == activated_interaction.get_post_interaction():
                             proclivity = activated_interaction.get_weight() * interaction.get_valence()
                             anticipations[index].add_proclivity(proclivity)
@@ -459,20 +513,25 @@ class ConstructiveExistence(RecursiveExistence):
                 anticipation = ConstructiveAnticipation(interaction, 0)
                 # print "adding anticipation", anticipation
                 anticipations.append(anticipation)
+        # sort default anticipations by valence - this could be random...
         anticipations.sort(key=lambda x: x.get_interaction().get_valence(), reverse=True)
-        # anticipations.sort(key=lambda x: x.get_interaction().get_label())
+        #anticipations.sort(key=lambda x: x.get_interaction().get_label())
         return anticipations
 
     def enact(self, intended_interaction):
+        # if interaction is primivite, consult the world and get what was actually enacted
         if intended_interaction.is_primitive():
             enacted_interaction_label = self.environment.enact_primitive_interaction(intended_interaction)
             enacted_interaction = self.addget_interaction(enacted_interaction_label)
             return enacted_interaction
         else:
+            # if interaction is composite, try to enact its pre-interaction
             enacted_pre_interaction = self.enact(intended_interaction.get_pre_interaction())
+            # if enacting failed, break the sequence and return
             if enacted_pre_interaction != intended_interaction.get_pre_interaction():
                 return enacted_pre_interaction
             else:
+                # if enacting pre-interaction succeeded, try to enact post-interaction
                 enacted_post_interaction = self.enact(intended_interaction.get_post_interaction())
                 return self.addget_composite_interaction(enacted_pre_interaction, enacted_post_interaction)
 

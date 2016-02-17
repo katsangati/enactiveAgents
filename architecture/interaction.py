@@ -2,10 +2,11 @@ __author__ = 'katja'
 
 
 class Interaction:
-    """An interaction is a basic sensorimotor pattern available to the agent.
+    """
+    An interaction is a basic sensorimotor pattern available to the agent.
     An interaction can be primitive or composite. If primitive, it is an association of experiment and result.
     If composite, it has pre- and post-interaction parts.
-    An interaction has valence and weight.
+    Each interaction has valence and weight.
     """
     def __init__(self, label):
         self.label = label
