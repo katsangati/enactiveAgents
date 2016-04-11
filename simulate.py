@@ -1,7 +1,7 @@
 import pygame
 import random
 from visualizer import canvas
-from environment import TestEnvironmentD1, TestEnvironmentD2, TestEnvironment, Environment, ConstructiveEnvironment
+from environment import *
 from architecture.existence import Existence, RecursiveExistence, ConstructiveExistence
 import os
 import argparse
@@ -14,7 +14,7 @@ def main(mechanism, world, saveimg):
     """
     The main script that runs the simulation.
     :param mechanism: which mechanism will be used to simulate behavior (simple, recursive, constructive)
-    :param world: which world will be used for simulation (command-line simple world, real world)
+    :param world: which world will be used for simulation (command-line test world, real world)
     :param saveimg: will the simulation output be saved
     """
 
@@ -46,7 +46,7 @@ def main(mechanism, world, saveimg):
         # initialize primitive interactions
         primitive_interactions = {"move forward": ("e1", "r1", 2), "bump": ("e1", "r2", -50),
                                   "turn left": ("e2", "r3", -1), "turn right": ("e3", "r4", -1),
-                                  "touch empty": ("e4", "r5", -1), "touch wall": ("e4", "r6", -2)}
+                                  "touch empty": ("e4", "r5", 0), "touch wall": ("e4", "r6", -1)}
 
         # initialize environments and existences
         if mechanism == "simple":
@@ -81,19 +81,27 @@ def main(mechanism, world, saveimg):
             # clock.tick(3)
 
     elif world == "test":
-        primitive_interactions = {"i1": ("e1", "r1", -1), "i2": ("e1", "r2", 1),
-                                  "i3": ("e2", "r1", -1), "i4": ("e2", "r2", 1)}
+        # primitive_interactions = {"i1": ("e1", "r1", -1), "i2": ("e1", "r2", 1),
+        #                           "i3": ("e2", "r1", -1), "i4": ("e2", "r2", 1)}
+
+        # suppose H is a homeostatic value
+        # e1r1 - check H positive, e1r2 - check H negative
+        # e2r1 - eat successfully, e2r2 - fail at eating
+        primitive_interactions = {"i1": ("e1", "r1", 1), "i2": ("e1", "r2", -1),
+                                  "i3": ("e2", "r1", 0)}
+
         if mechanism == "simple":
             environment = TestEnvironmentD1()
             ex = Existence(primitive_interactions, environment)
         elif mechanism == "recursive":
-            environment = TestEnvironmentD2()
+            #environment = TestEnvironmentD2()
+            environment = HomeoEnvironment()
             ex = RecursiveExistence(primitive_interactions, environment)
         elif mechanism == "constructive":
             environment = TestEnvironment()
             ex = ConstructiveExistence(primitive_interactions, environment)
 
-        for i in range(0, 15):
+        for i in range(0, 30):
             step_trace = ex.step()
             print (i, step_trace)
             print "\n"

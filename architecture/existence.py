@@ -229,7 +229,7 @@ class RecursiveExistence(Existence):
             enacted_interaction = self.addget_primitive_interaction(experiment, failed_result, valence)
             print "Really enacted ", enacted_interaction
 
-        if enacted_interaction.get_valence() >= 0:
+        if enacted_interaction.get_valence() > 0:
             self.mood = 'HAPPY'
         else:
             self.mood = 'SAD'
@@ -389,6 +389,7 @@ class RecursiveExistence(Existence):
             interaction = self.addget_interaction(label)
             interaction.set_pre_interaction(pre_interaction)
             interaction.set_post_interaction(post_interaction)
+            #TODO: one of these valences is None on some runs
             valence = pre_interaction.get_valence() + post_interaction.get_valence()
             interaction.set_valence(valence)
             experiment_label = interaction.get_label().upper()

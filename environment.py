@@ -222,3 +222,47 @@ class TestEnvironment:
         self.set_previous_interaction(enacted_interaction)
 
         return enacted_interaction
+
+
+class HomeoEnvironment:
+    """
+    Environment that implements a homeostatic principle.
+    """
+    def __init__(self):
+        self.prev_hlevel = -1
+        self.hlevel = -1
+        self.counter = 0
+
+    def set_hlevel(self, hlevel):
+        self.hlevel = hlevel
+
+    def get_hlevel(self):
+        return self.hlevel
+
+    def set_prev_hlevel(self, hlevel):
+        self.prev_hlevel = hlevel
+
+    def get_prev_hlevel(self):
+        return self.prev_hlevel
+
+    def return_result(self, experiment):
+        hlevel = self.get_hlevel()
+        prev_hlevel = self.get_prev_hlevel()
+        current_experiment = experiment.get_label()
+
+        if current_experiment == "e1":
+            if hlevel == 1:
+                result = "r1"
+            else:
+                result = "r2"
+
+        else:  # current_experiment == "e2":
+            result = "r1"
+            new_hlevel = 1
+            self.set_hlevel(new_hlevel)
+
+        self.counter += 1
+        if self.counter % 5 == 0:
+            self.set_hlevel(-1)
+
+        return result
