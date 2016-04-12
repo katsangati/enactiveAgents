@@ -253,8 +253,10 @@ class HomeoEnvironment:
         if "e1" in intended_interaction.get_label():
             if hlevel > prev_hlevel:
                 enacted_interaction = "e1r1"
-            else:
+            elif hlevel == prev_hlevel:
                 enacted_interaction = "e1r2"
+            else:
+                enacted_interaction = "e1r3"
 
         else:  # current_experiment == "e2":
             enacted_interaction = "e2r1"
@@ -264,7 +266,7 @@ class HomeoEnvironment:
         self.set_prev_hlevel(hlevel)
 
         self.counter += 1
-        if self.counter % 5 == 0:
+        if self.counter % 3 == 0:
             self.set_hlevel(-1)
 
         return enacted_interaction

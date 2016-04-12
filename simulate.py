@@ -20,6 +20,7 @@ def main(mechanism, world, saveimg):
 
     # initialize existence
     random.seed(1234)
+    #random.seed(1236)
     ex = None
 
     if world == "real":
@@ -89,7 +90,7 @@ def main(mechanism, world, saveimg):
         # e1r1 - check H positive, e1r2 - check H negative
         # e2r1 - eat successfully, e2r2 - fail at eating
         primitive_interactions = {"H_up": ("e1", "r1", 1), "H_same": ("e1", "r2", 0),
-                                  "eat": ("e2", "r1", 0)}
+                                  "H_lower": ("e1", "r3", -1), "eat": ("e2", "r1", 0)}
 
         print "Parameters: ", mechanism, world
         print "Primitive interactions: ", primitive_interactions
