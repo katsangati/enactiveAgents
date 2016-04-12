@@ -245,24 +245,26 @@ class HomeoEnvironment:
     def get_prev_hlevel(self):
         return self.prev_hlevel
 
-    def return_result(self, experiment):
+    def enact_primitive_interaction(self, intended_interaction):
         hlevel = self.get_hlevel()
         prev_hlevel = self.get_prev_hlevel()
-        current_experiment = experiment.get_label()
+        print "H: ", str(prev_hlevel), str(hlevel)
 
-        if current_experiment == "e1":
-            if hlevel == 1:
-                result = "r1"
+        if "e1" in intended_interaction.get_label():
+            if hlevel > prev_hlevel:
+                enacted_interaction = "e1r1"
             else:
-                result = "r2"
+                enacted_interaction = "e1r2"
 
         else:  # current_experiment == "e2":
-            result = "r1"
+            enacted_interaction = "e2r1"
             new_hlevel = 1
             self.set_hlevel(new_hlevel)
+
+        self.set_prev_hlevel(hlevel)
 
         self.counter += 1
         if self.counter % 5 == 0:
             self.set_hlevel(-1)
 
-        return result
+        return enacted_interaction
