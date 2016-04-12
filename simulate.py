@@ -19,6 +19,7 @@ def main(mechanism, world, saveimg):
     """
 
     # initialize existence
+    random.seed(1234)
     ex = None
 
     if world == "real":
@@ -87,21 +88,26 @@ def main(mechanism, world, saveimg):
         # suppose H is a homeostatic value
         # e1r1 - check H positive, e1r2 - check H negative
         # e2r1 - eat successfully, e2r2 - fail at eating
-        primitive_interactions = {"i1": ("e1", "r1", 1), "i2": ("e1", "r2", -1),
-                                  "i3": ("e2", "r1", 0)}
+        primitive_interactions = {"H_up": ("e1", "r1", 1), "H_same": ("e1", "r2", 0),
+                                  "eat": ("e2", "r1", 0)}
+
+        print "Parameters: ", mechanism, world
+        print "Primitive interactions: ", primitive_interactions
+        print "\n"
 
         if mechanism == "simple":
             environment = TestEnvironmentD1()
             ex = Existence(primitive_interactions, environment)
         elif mechanism == "recursive":
-            #environment = TestEnvironmentD2()
-            environment = HomeoEnvironment()
+            #TODO: fix recursive existence bug
+            environment = TestEnvironmentD2()
             ex = RecursiveExistence(primitive_interactions, environment)
         elif mechanism == "constructive":
-            environment = TestEnvironment()
+            #environment = TestEnvironment()
+            environment = HomeoEnvironment()
             ex = ConstructiveExistence(primitive_interactions, environment)
 
-        for i in range(0, 30):
+        for i in range(0, 200):
             step_trace = ex.step()
             print (i, step_trace)
             print "\n"
