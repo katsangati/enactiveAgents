@@ -72,6 +72,10 @@ class Interaction:
     def increment_weight(self):
         self.weight += 1
 
+    def compare(self):
+        """Interactions are compared by valence they have"""
+        return self.get_valence()
+
     def add_alternative_interaction(self, interaction):
         if interaction not in self.alternative_interactions:
             self.alternative_interactions.append(interaction)
@@ -80,4 +84,4 @@ class Interaction:
         return self.alternative_interactions
 
     def __repr__(self):
-        return "{0}, valence {1}, weight {2}".format(self.get_label(), self.get_valence(), self.get_weight())
+        return "{0}, meaning {1}, valence {2}, weight {3}".format(self.get_label(), self.get_meaning(), self.get_valence(), self.get_weight())

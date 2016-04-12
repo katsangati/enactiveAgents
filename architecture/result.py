@@ -7,3 +7,6 @@ class Result:
 
     def get_label(self):
         return self.label
+
+    def __repr__(self):
+        return "{0}".format(self.get_label())
