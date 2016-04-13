@@ -1,4 +1,3 @@
-import pygame
 import random
 from visualizer import canvas
 from environment import *
@@ -18,8 +17,7 @@ def main(world, saveimg):
     """
 
     # initialize existence
-    random.seed(1234)
-    ex = None
+    #random.seed(1234)
 
     if world == "real":
         # initialize pygame environment
@@ -38,8 +36,8 @@ def main(world, saveimg):
             imgsaver = ImageSaver(output_path)
 
         # pick random start location
-        start_location = (random.randint(canvas.BORDER,canvas.WIDTH-canvas.BORDER),
-                          random.randint(canvas.BORDER,canvas.HEIGHT-canvas.BORDER))
+        start_location = (random.randint(canvas.BORDER, canvas.WIDTH-canvas.BORDER),
+                          random.randint(canvas.BORDER, canvas.HEIGHT-canvas.BORDER))
         # initialize agent
         kenny = canvas.Agent(start_location)
 
@@ -73,17 +71,23 @@ def main(world, saveimg):
         # suppose H is a homeostatic value
         # e1r1 - check H positive, e1r2 - check H negative
         # e2r1 - eat successfully, e2r2 - fail at eating
+        # primitive_interactions = {"H_up": ("e1", "r1", 1), "H_same": ("e1", "r2", 0),
+        #                          "H_lower": ("e1", "r3", -1), "eat": ("e2", "r1", 0)}
+
         primitive_interactions = {"H_up": ("e1", "r1", 1), "H_same": ("e1", "r2", 0),
-                                  "H_lower": ("e1", "r3", -1), "eat": ("e2", "r1", 0)}
+                                  "H_lower": ("e1", "r3", -1), "eat": ("e2", "r1", 0),
+                                  "move_fwd": ("e3", "r1", 1), "nmove_fwd": ("e3", "r2", -1)}
 
         print "Primitive interactions: ", primitive_interactions
         print "\n"
 
-        #environment = TestEnvironment()
-        environment = HomeoEnvironment()
+        # environment = TestEnvironment()
+        # environment = HomeoEnvironment1()
+        # environment = HomeoEnvironment2()
+        environment = HomeoEnvironment3()
         ex = Existence(primitive_interactions, environment)
 
-        for i in range(0, 200):
+        for i in range(0, 300):
             step_trace = ex.step()
             print (i, step_trace)
             print "\n"
@@ -98,4 +102,3 @@ if __name__ == '__main__':
                         action="store_true")
     args = parser.parse_args()
     main(args.world, args.saveimg)
-

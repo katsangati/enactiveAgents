@@ -109,7 +109,7 @@ class TestEnvironment:
         return enacted_interaction
 
 
-class HomeoEnvironment:
+class HomeoEnvironment1:
     """
     Environment that implements a homeostatic principle.
     """
@@ -147,6 +147,122 @@ class HomeoEnvironment:
             enacted_interaction = "e2r1"
             new_hlevel = 1
             self.set_hlevel(new_hlevel)
+
+        self.set_prev_hlevel(hlevel)
+
+        self.counter += 1
+        if self.counter % 5 == 0:
+            self.set_hlevel(-1)
+
+        return enacted_interaction
+
+
+class HomeoEnvironment2:
+    """
+    Environment that implements a homeostatic principle.
+    """
+    def __init__(self):
+        self.prev_hlevel = -1
+        self.hlevel = -1
+        self.counter = 0
+
+    def set_hlevel(self, hlevel):
+        self.hlevel = hlevel
+
+    def get_hlevel(self):
+        return self.hlevel
+
+    def set_prev_hlevel(self, hlevel):
+        self.prev_hlevel = hlevel
+
+    def get_prev_hlevel(self):
+        return self.prev_hlevel
+
+    def enact_primitive_interaction(self, intended_interaction):
+        hlevel = self.get_hlevel()
+        prev_hlevel = self.get_prev_hlevel()
+        print "H: ", str(prev_hlevel), str(hlevel)
+
+        if "e1" in intended_interaction.get_label():
+            if hlevel > prev_hlevel:
+                enacted_interaction = "e1r1"
+            elif hlevel == prev_hlevel:
+                enacted_interaction = "e1r2"
+            else:
+                enacted_interaction = "e1r3"
+
+        elif "e2" in intended_interaction.get_label():
+            enacted_interaction = "e2r1"
+            new_hlevel = 1
+            self.set_hlevel(new_hlevel)
+
+        else:  # "move"
+            if hlevel == 1:
+                enacted_interaction = "e3r1"
+                new_hlevel = -1
+                self.set_hlevel(new_hlevel)
+            else:
+                enacted_interaction = "e3r2"
+
+        self.set_prev_hlevel(hlevel)
+
+        self.counter += 1
+        # if self.counter % 5 == 0:
+        #     self.set_hlevel(-1)
+
+        return enacted_interaction
+
+
+class HomeoEnvironment3:
+    """
+    Environment that implements a homeostatic principle.
+    """
+    def __init__(self):
+        self.prev_hlevel = 0
+        self.hlevel = 0
+        self.hrange = range(10)
+        self.counter = 0
+
+    def set_hlevel(self, hlevel):
+        self.hlevel = hlevel
+
+    def get_hlevel(self):
+        return self.hlevel
+
+    def set_prev_hlevel(self, hlevel):
+        self.prev_hlevel = hlevel
+
+    def get_prev_hlevel(self):
+        return self.prev_hlevel
+
+    def enact_primitive_interaction(self, intended_interaction):
+        hlevel = self.get_hlevel()
+        prev_hlevel = self.get_prev_hlevel()
+        print "H: ", str(prev_hlevel), str(hlevel)
+
+        if "e1" in intended_interaction.get_label():
+            if hlevel > prev_hlevel:
+                enacted_interaction = "e1r1"
+            elif hlevel == prev_hlevel:
+                enacted_interaction = "e1r2"
+            else:
+                enacted_interaction = "e1r3"
+
+        elif "e2" in intended_interaction.get_label():
+            enacted_interaction = "e2r1"
+            if hlevel == self.hrange[-1]:
+                hlevel = self.hrange[-1]
+            else:
+                hlevel += 2
+            self.set_hlevel(hlevel)
+
+        else:  # "move"
+            if hlevel > self.hrange[0]:
+                enacted_interaction = "e3r1"
+                hlevel -= 1
+                self.set_hlevel(hlevel)
+            else:
+                enacted_interaction = "e3r2"
 
         self.set_prev_hlevel(hlevel)
 
