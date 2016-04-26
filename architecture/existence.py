@@ -255,3 +255,62 @@ class Existence:
             return self.INTERACTIONS[label]
         else:
             return None
+
+
+class HomeoExistence(Existence):
+
+    def __init__(self, primitive_interactions, environment):
+        Existence.__init__(self, primitive_interactions, environment)
+
+    def enact(self, intended_interaction):
+        # if interaction is primitive, consult the world and get what was actually enacted
+        if intended_interaction.is_primitive():
+            enacted_interaction_label, new_valence = self.environment.enact_primitive_interaction(intended_interaction)
+            enacted_interaction = self.addget_interaction(enacted_interaction_label)
+            enacted_interaction.set_valence(new_valence)
+            print "new val: ", new_valence
+            print "got primitive interaction", enacted_interaction
+            return enacted_interaction
+        else:
+            # if interaction is composite, try to enact its pre-interaction
+            enacted_pre_interaction = self.enact(intended_interaction.get_pre_interaction())
+            # if enacting failed, break the sequence and return
+            if enacted_pre_interaction != intended_interaction.get_pre_interaction():
+                return enacted_pre_interaction
+            else:
+                # if enacting pre-interaction succeeded, try to enact post-interaction
+                enacted_post_interaction = self.enact(intended_interaction.get_post_interaction())
+                return self.addget_composite_interaction(enacted_pre_interaction, enacted_post_interaction)
+
+    # def anticipate(self):
+    #     anticipations = self.get_default_anticipations()
+    #     print "Default anticipations: ", anticipations
+    #     activated_interactions = self.get_activated_interactions()
+    #     if self.context_interaction is not None:
+    #         for activated_interaction in activated_interactions:
+    #             proposed_interaction = activated_interaction.get_post_interaction()
+    #             valence = proposed_interaction.get_valence()
+    #             if "e2" in proposed_interaction.get_label():
+    #                 valence = (self.environment.get_hlevel() - 5) * -1
+    #                 print "H: ", str(self.environment.get_hlevel())
+    #                 print "Anticipated valence: ", str(valence)
+    #             proclivity = activated_interaction.get_weight() * valence
+    #             anticipation = Anticipation(proposed_interaction, proclivity)
+    #             if anticipation not in anticipations:
+    #                 anticipations.append(anticipation)
+    #             else:
+    #                 index = anticipations.index(anticipation)
+    #                 # increment proclivity if anticipation is already in the list
+    #                 anticipations[index].add_proclivity(proclivity)
+    #                 # print "Afforded " + anticipation.__repr__()
+    #
+    #         for anticipation in anticipations:
+    #             index = anticipations.index(anticipation)
+    #             alternative_interactions = anticipation.get_interaction().get_alternative_interactions()
+    #             for interaction in alternative_interactions:
+    #                 for activated_interaction in activated_interactions:
+    #                     # combine proclivity with alternative interactions
+    #                     if interaction == activated_interaction.get_post_interaction():
+    #                         proclivity = activated_interaction.get_weight() * interaction.get_valence()
+    #                         anticipations[index].add_proclivity(proclivity)
+    #     return anticipations
